@@ -5,7 +5,14 @@ __pycache__/
 
 # C extensions
 *.so
-
+.idea/inspectionProfiles
+.idea/markdown-navigator
+.idea/markdown-navigator.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/SpaceInvadersHTN.AI.iml
+.idea/vcs.xml
+.idea/workspace.xml
 # Distribution / packaging
 .Python
 env/

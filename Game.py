@@ -2,7 +2,7 @@ import gym
 import tensorflow as tf
 import random
 import numpy as np
-
+from Models import Model1 as Model
 
 def process_observations(curr_observation, prev_observation=None):
 
@@ -82,11 +82,11 @@ def max_Q(Q, state):
 def main_loop():
 
     env = gym.make('SpaceInvaders-v0')
-
+    model = Model()
     done = False
 
     gamma = 0.99
-
+    target = None
     episode = 0
     curr_obs = env.reset()
     prev_obs = None
@@ -125,14 +125,16 @@ def main_loop():
             if Q is None:
 
                 target = mem_sample[2]
+                print(target, "TARGET")
+                Q = np.random.rand(max_episodes, num_actions)
 
             else:
 
                 target = mem_sample[2] + gamma * Q[mem_sample[-1], max_Q(Q, mem_sample[-1])]
 
-        if Q is None:
 
-            Q = np.zeros([max_episodes, num_actions])
+            model.train(training_data=curr_obs, labels=Q[eps], predicted=Q[eps, action], target=target)
+
 
         env.render()
 

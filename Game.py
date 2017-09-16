@@ -1,8 +1,10 @@
-import gym
-import tensorflow as tf
 import random
+
+import gym
 import numpy as np
+
 from Models import Model1 as Model
+
 
 def process_observations(curr_observation, prev_observation=None):
 
@@ -133,7 +135,7 @@ def main_loop():
                 target = mem_sample[2] + gamma * Q[mem_sample[-1], max_Q(Q, mem_sample[-1])]
 
 
-            model.train(training_data=curr_obs, labels=Q[eps], predicted=Q[eps, action], target=target)
+            model.train(training_data=curr_obs, labels=Q[eps], target=target)
 
 
         env.render()

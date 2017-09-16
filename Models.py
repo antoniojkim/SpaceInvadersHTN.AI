@@ -1,8 +1,9 @@
-import random
-import time
-import tensorflow as tf
-import numpy as np
 import os
+import time
+
+import numpy as np
+import tensorflow as tf
+
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def weight_variable(shape):
@@ -66,9 +67,7 @@ class Model1:
         self.conv_network = self.conv_architecture(self.inputs, append_weights=variables_loaded)
         self.fc_network = self.fc_architecture(self.conv_network, append_weights=variables_loaded)
 
-        probabilities = self.fc_network
-
-        action = self.choose_action(probabilities)
+        self.output = self.fc_network
 
         self.expected = tf.placeholder(tf.float32, shape=[4])
 
@@ -102,13 +101,13 @@ class Model1:
 
             return 4
 
-    def train(self, training_data, labels, predicted, target, epochs=10, learning_rate=1e-4):
+    def train(self, training_data, labels, target, epochs=10, learning_rate=1e-4):
         #if self.session is None:
         #    self.session = tf.Session()
         #    self.session.run(tf.global_variables_initializer())
         self.session = tf.Session()
         self.session.run(tf.global_variables_initializer())
-        self.loss = self.mean_squared_loss(predicted, target)
+        self.loss = self.mean_squared_loss(target, self.output)
         self.optimizer = tf.train.GradientDescentOptimizer(learning_rate)
         training_function = self.optimizer.minimize(self.loss)
 

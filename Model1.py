@@ -51,6 +51,7 @@ def conv_architecture(input, weights, biases, strides):
 
     return vectorize(conv3)
 
+
 def fc_architecture(vector, weights, biases):
 
     weights.append(weight_variable([vector.shape[1], 200]))

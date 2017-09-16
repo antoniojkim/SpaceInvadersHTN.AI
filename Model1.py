@@ -32,20 +32,42 @@ def softmax(x):
 
     return tf.nn.softmax(x)
 
+def tanh(x):
 
-def architecture(input, w_conv1, b_conv1, w_conv2, b_conv2, w_conv3, b_conv3):
+    return tf.nn.tanh(x)
 
-    conv1 = conv2d(input, w_conv1, b_conv1, s=2)
+def vectorize(x):
 
-    conv2 = conv2d(conv1, w_conv2, b_conv2, s=2)
-
-    conv3 = conv2d(conv2, w_conv3, b_conv3, s=2)
-
-    return conv3
+    return tf.reshape(x, [-1])
 
 
-features = [32, 16, 8]
-kernel_size = [7, 5, 3]
+def conv_architecture(input, weights, biases, strides):
+
+    conv1 = relu(conv2d(input, weights[0], biases[0], s=strides[0]))
+
+    conv2 = relu(conv2d(conv1, weights[1], biases[1], s=strides[1]))
+
+    conv3 = relu(conv2d(conv2, weights[2], biases[2], s=strides[2]))
+
+    return vectorize(conv3)
+
+def fc_architecture(vector, weights, biases):
+
+    weights.append(weight_variable([vector.shape[1], 200]))
+    biases.append(bias_variable([200]))
+
+    vector = relu(tf.matmul(vector, weights[-1], biases[-1]))
+
+    weights.append(weight_variable([200, 4]))
+    biases.append(bias_variable([4]))
+
+    prediction = softmax(tf.matmul(vector, weights[-1], biases[-1]))
+
+    return prediction
+
+features = [8, 16, 32]
+kernel_size = [8, 5, 3]
+strides = [2, 2, 2]
 weights = []
 biases = []
 
@@ -57,4 +79,3 @@ for i in range(len(features)):
                                     features[i]]))
 
     biases.append(bias_variable([features[i]]))
-

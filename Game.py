@@ -67,7 +67,7 @@ def max_Q(Q, state):
     max_action = 0
 
     max = Q[state, max_action]
-    
+
     for action in range(Q.shape[1]):
 
         if max < Q[state, action]:

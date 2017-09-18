@@ -17,55 +17,28 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
-def conv2d(x, W, b, s=1):
-    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID') + b
+def conv2d(x, W, s=1):
+    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID')
 
-
-def max_pool_2x2(x):
-    return tf.nn.max_pool(x, ksize=[1, 2, 2, 1],
-                          strides=[1, 2, 2, 1], padding='VALID')
 
 class Model1:
 
-    def __init__(self, path=None, features=[8, 16, 32], kernel_size=[8, 5, 3]):
+    def __init__(self, features=[12, 18, 32], kernel_size=[8, 5, 3]):
 
-        self.session = None
         self.optimizer = None
 
 
-        if path != None:
-            self.load_variables()
-            variables_loaded = False
-        else:
+        self.weights = []
+        self.biases = []
 
-            #self.strides = strides
-            self.weights = []
-            self.biases = []
+        self.weights.append(weight_variable([kernel_size[0], kernel_size[0], 1, features[0]]))
 
-            self.weights.append(weight_variable([kernel_size[0], kernel_size[0], 1, features[0]]))
+        self.weights.append(weight_variable([kernel_size[1], kernel_size[1], features[0], features[1]]))
 
-            self.biases.append(bias_variable([features[0]]))
-
-            self.weights.append(weight_variable([kernel_size[1], kernel_size[1], features[0], features[1]]))
-
-            self.biases.append(bias_variable([features[1]]))
-
-            self.weights.append(weight_variable([kernel_size[2], kernel_size[2], features[1], features[2]]))
-
-            self.biases.append(bias_variable([features[2]]))
-
-            """for i in range(1, len(kernel_size)):
-                self.weights.append(weight_variable([kernel_size[i], kernel_size[i], features[i - 1], features[i]]))
-
-                self.biases.append(bias_variable([features[i]]))
-
-                print([kernel_size[i], kernel_size[i], features[i - 1], features[i]], "SHAPES")"""
-
-            variables_loaded = True
         self.inputs = tf.placeholder(tf.float32, [1, 185, 120, 1])
 
-        self.conv_network = self.conv_architecture(self.inputs, append_weights=variables_loaded)
-        self.fc_network = self.fc_architecture(self.conv_network, append_weights=variables_loaded)
+        self.conv_network = self.conv_architecture(self.inputs)
+        self.fc_network = self.fc_architecture(self.conv_network)
 
         self.output = self.fc_network
 
@@ -73,48 +46,31 @@ class Model1:
 
         #self.loss = self.mean_squared_loss(output, self.expected)
 
-    def forward_pass(self, image):
-        if self.session is None:
-            self.session = tf.Session()
-            self.session.run(tf.global_variables_initializer())
+    def forward_pass(self, session, image):
+        # if self.session is None:
+        #     self.session = tf.Session()
+        #     self.session.run(tf.global_variables_initializer())
 
-        output = self.session.run(self.network, {self.inputs: image})
+        output = session.run(self.output, {self.inputs: image})
         return output
 
-    def choose_action(self, probs):
 
-        max_index = tf.argmax(probs)
+    def train(self, session, training_data, labels, target, epochs=3, learning_rate=1e-3):
 
-        if max_index == 0:
-
-            return 0
-
-        elif max_index == 1:
-
-            return 1
-
-        elif max_index == 2:
-
-            return 3
-
-        elif max_index == 3:
-
-            return 4
-
-    def train(self, training_data, labels, target, epochs=10, learning_rate=1e-4):
-        #if self.session is None:
-        #    self.session = tf.Session()
-        #    self.session.run(tf.global_variables_initializer())
-        self.session = tf.Session()
-        self.session.run(tf.global_variables_initializer())
         self.loss = self.mean_squared_loss(target, self.output)
-        self.optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+        self.optimizer = tf.train.AdadeltaOptimizer(learning_rate)
+
         training_function = self.optimizer.minimize(self.loss)
 
-        training_data = np.reshape(training_data, [1, training_data.shape[0], training_data.shape[1], 1])
-        for _ in range(epochs):
+        session.run(tf.global_variables_initializer())
 
-            self.session.run(training_function, {self.inputs: training_data, self.expected: labels})
+        training_data = np.reshape(training_data, [1, training_data.shape[0], training_data.shape[1], 1])
+        for i in range(epochs):
+
+            session.run(training_function, {self.inputs: training_data, self.expected: labels})
+
+        #print(self.session.run(self.loss, {self.inputs: training_data, self.expected: labels}))
+
 
     def vectorize(self, x):
         print(x.shape, "conv shape")
@@ -125,23 +81,17 @@ class Model1:
         """if append_weights is True:
             max_depth = max(len(self.weights), len(self.biases), len(self.strides))
         else:
-            max_depth = max(len(self.weights), len(self.biases), len(self.strides))-2
-        print(max_depth, "Max depth")
-        #convolution = tf.nn.relu(conv2d(inputs, self.weights[0], self.biases[0], s=strides[0]))
-        convolution = inputs
-        for i in range(max_depth):
-            convolution = tf.nn.relu(conv2d(convolution, self.weights[i], self.biases[i], s=self.strides[i]))
-            print(convolution.shape, "Convolution shape")"""
+            max_depth = max(len(self.weights), len(self.biases), len(self.strides))-2"""
 
         print(inputs.shape, "inputs to conv layer shape")
 
-        conv1 = tf.nn.relu(conv2d(inputs, self.weights[0], self.biases[0]))
+        conv1 = tf.nn.relu(conv2d(inputs, self.weights[0]))
         print(conv1.shape)
-        conv2 = tf.nn.relu(conv2d(conv1, self.weights[1], self.biases[1]))
+        conv2 = tf.nn.relu(conv2d(conv1, self.weights[1]))
         print(conv2.shape)
-        conv3 = tf.nn.relu(conv2d(conv2, self.weights[2], self.biases[2]))
+        # conv3 = tf.nn.relu(conv2d(conv2, self.weights[2], self.biases[2]))
 
-        return self.vectorize(conv3)
+        return self.vectorize(conv2)
 
     def fc_architecture(self, vector, num_hidden_neurons=200, append_weights=True):
 
@@ -158,21 +108,17 @@ class Model1:
         print(prediction.shape)
         return prediction
 
-    def save_variables(self, path=None):
+    def save_variables(self, session, path=None):
         if (path is None):
             path = "./Model1_Variables  {}.ckpt".format(time.strftime("%Y-%m-%d  %H.%M.%S"))
-        if self.session is None:
-            self.session = tf.Session()
-            self.session.run(tf.global_variables_initializer())
         saver = tf.train.Saver()
-        return saver.save(self.session, path)
+        return saver.save(session, path)
 
 
     def load_variables(self, path="./Model1_Variables.ckpt"):
-        if self.session is None:
-            self.session = tf.Session()
-        saver = tf.train.Saver()
-        saver.restore(self.session, path)
+        with tf.Session() as session:
+            tf.train.Saver().restore(session, path)
+            return session
 
     def mean_squared_loss(self, output, expected):
         return tf.reduce_sum(tf.square(output - expected))

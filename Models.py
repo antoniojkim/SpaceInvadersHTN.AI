@@ -1,9 +1,8 @@
+"""Conv net model to be used to trin"""
 import os
 import time
-
 import numpy as np
 import tensorflow as tf
-
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
 def weight_variable(shape):
@@ -55,7 +54,7 @@ class Model1:
         return output
 
 
-    def train(self, session, training_data, labels, target, epochs=3, learning_rate=1e-3):
+    def train(self, session, training_data, labels, target, epochs=4, learning_rate=1e-3):
 
         self.loss = self.mean_squared_loss(target, self.output)
         self.optimizer = tf.train.AdadeltaOptimizer(learning_rate)

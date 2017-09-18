@@ -1,5 +1,5 @@
+"""Training the model"""
 import random
-
 import gym
 import numpy as np
 import tensorflow as tf
@@ -88,7 +88,7 @@ def main_loop():
     with tf.Session() as session:
         model = Model()
         done = False
-        alpha = 5e-3
+        alpha = 1e-3
         gamma = 0.99
         target = None
         episode = 0
@@ -101,7 +101,7 @@ def main_loop():
         action_to_prob = [3, 2, 1, 1, 0]
 
         num_actions = 4
-        max_episodes = 10000
+        max_episodes = 30000
         threshhold = 100
         Q = None
 
@@ -113,9 +113,16 @@ def main_loop():
 
                 action = choose_action(epsilon_prob)
 
+            elif eps % 57 == 0:
+
+                epsilon_prob = [random.uniform(0, 1) for _ in range(num_actions)]
+
+                action = choose_action(epsilon_prob)
+
             else:
                 prob = model.forward_pass(session, curr_obs.reshape([1, 185, 120, 1]))
                 action = choose_action(prob)
+
 
             curr_obs, curr_reward, done, info = env.step(action)
 
@@ -123,7 +130,15 @@ def main_loop():
 
             memory.append((prev_obs, action, curr_reward, curr_obs, eps))
 
+            while len(memory) > 100:
+
+                rand_death_i = random.randint(0, len(memory) - 1)
+
+                del memory[rand_death_i]
+
             if eps % threshhold == 0:
+
+                print(eps, "EPISODE")
 
                 rand_i = random.randint(0, len(memory) - 1)
 
@@ -137,7 +152,7 @@ def main_loop():
                 else:
 
                     target = mem_sample[2] + gamma * Q[mem_sample[-1], max_Q(Q, mem_sample[-1])]
-                    print(target, "TARGET")
+                    #print(target, "TARGET")
                 model.train(session, training_data=mem_sample[-2], labels=Q[eps], target=target)
 
             Q[eps, action_to_prob[action]] += alpha * (target - Q[eps, action_to_prob[action]])

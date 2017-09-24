@@ -26,6 +26,24 @@ def process_observations(curr_observation, prev_observation=None):
 
 def choose_action(probs):
 
+    """max_index = np.argmax(probs)
+
+    if max_index == 0:
+
+        return 4
+
+    elif max_index == 1:
+
+        return 3
+
+    elif max_index == 2:
+
+        return 1
+
+    elif max_index == 3:
+
+        return 0"""
+
     max_index = np.argmax(probs)
 
     if max_index == 0:
@@ -42,7 +60,19 @@ def choose_action(probs):
 
     elif max_index == 3:
 
-        return 0
+        rand = random.uniform(0, 1)
+
+        if rand < 0.2222:
+
+            return 1
+
+        elif 0.2222 < rand < 0.6:
+
+            return 3
+
+        else:
+
+            return 4
 
 
 def decay_rewards(rewards, gamma):
@@ -101,7 +131,7 @@ def main_loop():
         action_to_prob = [3, 2, 1, 1, 0]
 
         num_actions = 4
-        max_episodes = 30000
+        max_episodes = 50000
         threshhold = 100
         Q = None
 
@@ -113,7 +143,7 @@ def main_loop():
 
                 action = choose_action(epsilon_prob)
 
-            elif eps % 57 == 0:
+            elif eps % 57 == 0: # random asss number
 
                 epsilon_prob = [random.uniform(0, 1) for _ in range(num_actions)]
 
@@ -138,7 +168,7 @@ def main_loop():
 
             if eps % threshhold == 0:
 
-                print(eps, "EPISODE")
+                print("Episode", eps)
 
                 rand_i = random.randint(0, len(memory) - 1)
 
@@ -165,10 +195,9 @@ def main_loop():
                 death_count = death_count + 1
                 done = False
                 env.reset()
-                print(death_count, "DEATH COUNT")
+                print("Death count", death_count)
 
         print(model.save_variables(session))
-
 
 
 if __name__ == '__main__':

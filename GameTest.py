@@ -40,19 +40,7 @@ def choose_action(probs):
 
     elif max_index == 3:
 
-        rand = random.uniform(0, 1)
-
-        if rand < 0.2222:
-
-            return 1
-
-        elif 0.2222 < rand < 0.6:
-
-            return 3
-
-        else:
-
-            return 4
+        return 0
 
 
 
@@ -97,7 +85,7 @@ def main_loop(path):
 
 if __name__ == '__main__':
 
-    main_loop("./fourset/Model1_Variables  2017-09-17  08.52.55.ckpt")
+    main_loop("./Model1_Variables  2017-09-19  05.20.36.ckpt")
 
 # ./Model1_Variables  2017-09-17  00.04.44.ckpt
 
@@ -106,3 +94,4 @@ if __name__ == '__main__':
 # ./twoset/Model1_Variables  2017-09-17  07.49.46.ckpt : twoset just stays in one spot and shoots
 # ./threeset/Model1_Variables  2017-09-17  07.57.12.ckpt : threeset fucking piece of trash
 # ./fourset/Model1_Variables  2017-09-17  08.52.55.ckpt : fourset
+# ./Model1_Variables  2017-09-19  05.20.36.ckpt

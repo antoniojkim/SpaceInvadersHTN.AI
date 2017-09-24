@@ -1,4 +1,4 @@
-"""Conv net model to be used to trin"""
+"""Conv net model to be used to train"""
 import os
 import time
 import numpy as np
@@ -16,16 +16,15 @@ def bias_variable(shape):
     return tf.Variable(initial)
 
 
-def conv2d(x, W, s=1):
-    return tf.nn.conv2d(x, W, strides=[1, 2, 2, 1], padding='VALID')
+def conv2d(x, weight):
+    return tf.nn.conv2d(x, weight, strides=[1, 2, 2, 1], padding='VALID')
 
 
 class Model1:
 
-    def __init__(self, features=[12, 18, 32], kernel_size=[8, 5, 3]):
+    def __init__(self, features=[12, 18], kernel_size=[8, 5]):
 
         self.optimizer = None
-
 
         self.weights = []
         self.biases = []
@@ -43,12 +42,7 @@ class Model1:
 
         self.expected = tf.placeholder(tf.float32, shape=[4])
 
-        #self.loss = self.mean_squared_loss(output, self.expected)
-
     def forward_pass(self, session, image):
-        # if self.session is None:
-        #     self.session = tf.Session()
-        #     self.session.run(tf.global_variables_initializer())
 
         output = session.run(self.output, {self.inputs: image})
         return output
@@ -57,6 +51,7 @@ class Model1:
     def train(self, session, training_data, labels, target, epochs=4, learning_rate=1e-3):
 
         self.loss = self.mean_squared_loss(target, self.output)
+
         self.optimizer = tf.train.AdadeltaOptimizer(learning_rate)
 
         training_function = self.optimizer.minimize(self.loss)
@@ -68,8 +63,6 @@ class Model1:
 
             session.run(training_function, {self.inputs: training_data, self.expected: labels})
 
-        #print(self.session.run(self.loss, {self.inputs: training_data, self.expected: labels}))
-
 
     def vectorize(self, x):
         print(x.shape, "conv shape")
@@ -77,18 +70,12 @@ class Model1:
 
     def conv_architecture(self, inputs, append_weights=True):
 
-        """if append_weights is True:
-            max_depth = max(len(self.weights), len(self.biases), len(self.strides))
-        else:
-            max_depth = max(len(self.weights), len(self.biases), len(self.strides))-2"""
-
         print(inputs.shape, "inputs to conv layer shape")
 
         conv1 = tf.nn.relu(conv2d(inputs, self.weights[0]))
         print(conv1.shape)
         conv2 = tf.nn.relu(conv2d(conv1, self.weights[1]))
         print(conv2.shape)
-        # conv3 = tf.nn.relu(conv2d(conv2, self.weights[2], self.biases[2]))
 
         return self.vectorize(conv2)
 
